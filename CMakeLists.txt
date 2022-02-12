@@ -11,6 +11,7 @@ set(PICO_SDK_PATH "/Users/jimmylye/GitHub/pico/pico-sdk")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
+include("PicoLed/PicoLed.cmake")
 
 project(air_strings C CXX ASM)
 
