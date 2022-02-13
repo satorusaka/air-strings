@@ -1,5 +1,11 @@
 # air-strings
-use Chunithm's Air Strings with a raspberry pi pico.
+Control Chunithm's Air Strings with a raspberry pi pico.
+
+---
+## todos
+
+* [ ] keyboard emulation
+* [ ] dual ws2812 connections
 
 ---
 
