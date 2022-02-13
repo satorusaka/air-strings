@@ -16,5 +16,6 @@
   },
   "files.associations": {
     "cstddef": "c"
-  }
+  },
+  "C_Cpp.errorSquiggles": "Disabled"
 }

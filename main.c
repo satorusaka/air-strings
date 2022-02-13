@@ -12,11 +12,6 @@
 #include "hardware/clocks.h"
 #include "ws2812.pio.h"
 
-#define IS_RGBW false
-#define NUM_PIXELS 9
-
-#define WS2812_PIN 2
-
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
 //--------------------------------------------------------------------+
