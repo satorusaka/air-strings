@@ -8,11 +8,20 @@
 
 #include "usb_descriptors.h"
 
+#include "hardware/pio.h"
+#include "hardware/clocks.h"
+#include "ws2812.pio.h"
+
+#define IS_RGBW false
+#define NUM_PIXELS 9
+
+#define WS2812_PIN 2
+
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
 //--------------------------------------------------------------------+
 #define NUM_INPUTS 6
-uint8_t SENSOR[NUM_INPUTS] = {14, 15, 16, 17, 18, 19};
+uint8_t SENSOR[NUM_INPUTS] = {11, 20, 13, 19, 12, 18};
 uint8_t KEYS[NUM_INPUTS] = {HID_KEY_1, HID_KEY_2, HID_KEY_3, HID_KEY_4, HID_KEY_5, HID_KEY_6};
 
 void hid_task(void);
@@ -57,7 +66,7 @@ static void send_hid_report(uint8_t report_id)
   int keypresscount = 0;
   for (int i = 0; i < NUM_INPUTS; i++)
   {
-    if (gpio_get(SENSOR[i]) == 0)
+    if (gpio_get(SENSOR[i]) != 0)
     {
       keycode[keypresscount] = KEYS[i];
       keypresscount++;
