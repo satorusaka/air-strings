@@ -48,10 +48,7 @@ void core1_main()
 
   while (1)
   {
-    ledStrip1.fill(PicoLed::RGB(0, 0, 255));
-    ledStrip1.show();
-    sleep_ms(500);
-    ledStrip1.fill(PicoLed::RGB(255, 0, 0));
+    ledStrip1.fill(PicoLed::RGB(255, 255, 255));
     ledStrip1.show();
 
     // for (size_t i = 0; i < strips.size(); i++)
@@ -89,6 +86,33 @@ int main(void)
   }
 
   return 0;
+}
+
+bool is_key_pressed(uint8_t key)
+{
+  return gpio_get(SENSOR[key]);
+}
+
+bool is_any_key_pressed()
+{
+  for (int i = 0; i < NUM_INPUTS; i++)
+  {
+    if (is_key_pressed(i))
+      return true;
+  }
+  return false;
+}
+
+// get pressed sensors
+uint8_t get_pressed_sensors()
+{
+  uint8_t pressed_sensors = 0;
+  for (int i = 0; i < NUM_INPUTS; i++)
+  {
+    if (is_key_pressed(i))
+      pressed_sensors |= (1 << i);
+  }
+  return pressed_sensors;
 }
 
 //--------------------------------------------------------------------+
@@ -146,7 +170,7 @@ void hid_task(void)
   start_ms += interval_ms;
 
   // Remote wakeup
-  if (tud_suspended())
+  if (tud_suspended() && is_any_key_pressed())
   {
     // Wake up host if we are in suspend mode
     // and REMOTE_WAKEUP feature is enabled by host
