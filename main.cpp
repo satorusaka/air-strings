@@ -1,29 +1,76 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <array>
 
 #include "pico/stdlib.h"
+#include "pico/multicore.h"
+
 #include "bsp/board.h"
-#include "tusb.h"
-
-#include "usb_descriptors.h"
-
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
+
+#include "tusb.h"
+#include "usb_descriptors.h"
+
 #include "ws2812.pio.h"
+#include <PicoLed.hpp>
 
 //--------------------------------------------------------------------+
-// MACRO CONSTANT TYPEDEF PROTYPES
-//--------------------------------------------------------------------+
+
+#define LED_PIN1 10
+#define LED_PIN2 21
+#define LED_LENGTH 3
+#define LED_BRIGHTNESS 80
+
 #define NUM_INPUTS 6
 uint8_t SENSOR[NUM_INPUTS] = {11, 20, 13, 19, 12, 18};
 uint8_t KEYS[NUM_INPUTS] = {HID_KEY_1, HID_KEY_2, HID_KEY_3, HID_KEY_4, HID_KEY_5, HID_KEY_6};
 
+#define FLAG_VALUE 123 // for multicore
+
+//--------------------------------------------------------------------+
+// MACRO CONSTANT TYPEDEF PROTYPES
+//--------------------------------------------------------------------+
 void hid_task(void);
+
+/*------------- Core1 MAIN -------------*/
+void core1_main()
+{
+  sleep_ms(500);
+  auto ledStrip1 = PicoLed::addLeds<PicoLed::WS2812B>(pio0, 0, LED_PIN1, LED_LENGTH, PicoLed::FORMAT_GRB);
+  ledStrip1.setBrightness(LED_BRIGHTNESS);
+
+  // auto ledStrip2 = PicoLed::addLeds<PicoLed::WS2812B>(pio1, 0, LED_PIN2, LED_LENGTH, PicoLed::FORMAT_GRB);
+  // ledStrip2.setBrightness(LED_BRIGHTNESS);
+
+  // std::array strips{ledStrip1, ledStrip2};
+
+  while (1)
+  {
+    ledStrip1.fill(PicoLed::RGB(0, 0, 255));
+    ledStrip1.show();
+    sleep_ms(500);
+    ledStrip1.fill(PicoLed::RGB(255, 0, 0));
+    ledStrip1.show();
+
+    // for (size_t i = 0; i < strips.size(); i++)
+    // {
+    //   strips[i].fill(PicoLed::RGB(255, 255, 255));
+    //   strips[i].show();
+    // }
+    sleep_ms(10);
+  }
+}
 
 /*------------- MAIN -------------*/
 int main(void)
 {
+  // core1 init
+  multicore_launch_core1(core1_main);
+  // uint32_t g = multicore_fifo_pop_blocking(); // Wait for it to start up
+
+  // Initialize the gpio
   for (int i = 0; i < NUM_INPUTS; i++)
   {
     gpio_init(SENSOR[i]);
@@ -31,6 +78,7 @@ int main(void)
     gpio_pull_up(SENSOR[i]);
   }
 
+  // Initialize the board
   board_init();
   tusb_init();
 
@@ -68,13 +116,7 @@ static void send_hid_report(uint8_t report_id)
     }
   }
 
-  int sum = 0;
-  for (int i = 0; i < NUM_INPUTS; ++i)
-  {
-    sum |= keycode[i];
-  }
-
-  if (sum != 0)
+  if (keypresscount != 0)
   {
     tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, keycode);
     has_keyboard_key = true;
@@ -124,7 +166,7 @@ void tud_hid_report_complete_cb(uint8_t instance, uint8_t const *report, uint8_t
 {
   (void)instance;
   (void)len;
-  // send_hid_report(REPORT_ID_KEYBOARD);
+  send_hid_report(REPORT_ID_KEYBOARD);
 }
 
 // Invoked when received GET_REPORT control request
