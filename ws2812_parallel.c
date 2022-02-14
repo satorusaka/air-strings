@@ -16,8 +16,9 @@
 #include "ws2812.pio.h"
 
 #define FRAC_BITS 4
-#define NUM_PIXELS 64
-#define WS2812_PIN_BASE 2
+#define NUM_PIXELS 3
+#define WS2812_PIN_BASE 8
+#define WS2812_PINS [ 8, 9 ]
 
 // horrible temporary hack to avoid changing pattern code
 static uint8_t *current_string_out;
@@ -209,8 +210,8 @@ static value_bits_t states[2][NUM_PIXELS * 4];
 
 // example - string 0 is RGB only
 static uint8_t string0_data[NUM_PIXELS * 3];
-// example - string 1 is RGBW
-static uint8_t string1_data[NUM_PIXELS * 4];
+// example - string 1 is RGB only
+static uint8_t string1_data[NUM_PIXELS * 3];
 
 string_t string0 = {
     .data = string0_data,
@@ -327,15 +328,15 @@ int main()
     int t = 0;
     while (1)
     {
-        int pat = rand() % count_of(pattern_table);
+        int pat = 4;
         int dir = (rand() >> 30) & 1 ? 1 : -1;
         if (rand() & 1)
             dir = 0;
         puts(pattern_table[pat].name);
         puts(dir == 1 ? "(forward)" : dir ? "(backward)"
                                           : "(still)");
-        int brightness = 0;
         uint current = 0;
+
         for (int i = 0; i < 1000; ++i)
         {
             current_string_out = string0.data;
@@ -345,16 +346,13 @@ int main()
             current_string_4color = true;
             pattern_table[pat].pat(NUM_PIXELS, t);
 
-            transform_strings(strings, count_of(strings), colors, NUM_PIXELS * 4, brightness);
+            transform_strings(strings, count_of(strings), colors, NUM_PIXELS * 4, 255);
             dither_values(colors, states[current], states[current ^ 1], NUM_PIXELS * 4);
             sem_acquire_blocking(&reset_delay_complete_sem);
             output_strings_dma(states[current], NUM_PIXELS * 4);
 
             current ^= 1;
             t += dir;
-            brightness++;
-            if (brightness == (0x20 << FRAC_BITS))
-                brightness = 0;
         }
         memset(&states, 0, sizeof(states)); // clear out errors
     }

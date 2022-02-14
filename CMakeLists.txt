@@ -17,6 +17,8 @@ project(air_strings C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+include("PicoLed/PicoLed.cmake")
+
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(air_strings)
@@ -45,6 +47,29 @@ pico_enable_stdio_uart(air_strings 0)
 target_link_libraries(air_strings PUBLIC pico_stdlib tinyusb_device tinyusb_board hardware_pio)
 
 pico_add_extra_outputs(air_strings)
+
+
+# =============================================================================
+# for testing: ws2812 parallel output
+# =============================================================================
+
+add_executable(pio_ws2812_parallel)
+
+pico_generate_pio_header(pio_ws2812_parallel ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
+
+target_sources(pio_ws2812_parallel PRIVATE ws2812_parallel.c)
+
+target_compile_definitions(pio_ws2812_parallel PRIVATE
+        PIN_DBG1=3)
+
+target_link_libraries(pio_ws2812_parallel PRIVATE pico_stdlib hardware_pio hardware_dma)
+pico_add_extra_outputs(pio_ws2812_parallel)
+
+# =============================================================================
+# End of: ws2812 parallel output
+# =============================================================================
+
+
 
 # Additionally generate python and hex pioasm outputs for inclusion in the RP2040 datasheet
 add_custom_target(pio_ws2812_datasheet DEPENDS ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py)
