@@ -18,16 +18,13 @@
 
 //--------------------------------------------------------------------+
 
-#define LED_PIN1 10
-#define LED_PIN2 21
+#define LED_PIN1 21
 #define LED_LENGTH 3
-#define LED_BRIGHTNESS 80
+#define LED_BRIGHTNESS 255
 
 #define NUM_INPUTS 6
-uint8_t SENSOR[NUM_INPUTS] = {11, 20, 13, 19, 12, 18};
+uint8_t SENSOR[NUM_INPUTS] = {3, 20, 5, 19, 4, 18};
 uint8_t KEYS[NUM_INPUTS] = {HID_KEY_1, HID_KEY_2, HID_KEY_3, HID_KEY_4, HID_KEY_5, HID_KEY_6};
-
-#define FLAG_VALUE 123 // for multicore
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
@@ -37,35 +34,38 @@ void hid_task(void);
 /*------------- Core1 MAIN -------------*/
 void core1_main()
 {
-  sleep_ms(500);
+  sleep_ms(1000);
   auto ledStrip1 = PicoLed::addLeds<PicoLed::WS2812B>(pio0, 0, LED_PIN1, LED_LENGTH, PicoLed::FORMAT_GRB);
-  ledStrip1.setBrightness(LED_BRIGHTNESS);
+  auto ledStrip2 = PicoLed::addLeds<PicoLed::WS2812B>(pio0, 1, 2, LED_LENGTH, PicoLed::FORMAT_GRB);
 
-  // auto ledStrip2 = PicoLed::addLeds<PicoLed::WS2812B>(pio1, 0, LED_PIN2, LED_LENGTH, PicoLed::FORMAT_GRB);
-  // ledStrip2.setBrightness(LED_BRIGHTNESS);
+  std::array strips{ledStrip1, ledStrip2};
 
-  // std::array strips{ledStrip1, ledStrip2};
+  for (size_t i = 0; i < strips.size(); i++)
+  {
+    strips[i].setBrightness(LED_BRIGHTNESS);
+    strips[i].clear();
+    strips[i].show();
+  }
+
+  sleep_ms(500);
 
   while (1)
   {
-    ledStrip1.fill(PicoLed::RGB(255, 255, 255));
-    ledStrip1.show();
-
-    // for (size_t i = 0; i < strips.size(); i++)
-    // {
-    //   strips[i].fill(PicoLed::RGB(255, 255, 255));
-    //   strips[i].show();
-    // }
-    sleep_ms(10);
+    for (size_t i = 0; i < strips.size(); i++)
+    {
+      strips[i].fill(PicoLed::RGB(255, 255, 255));
+      strips[i].show();
+    }
+    sleep_ms(100);
   }
 }
 
 /*------------- MAIN -------------*/
 int main(void)
 {
+
   // core1 init
   multicore_launch_core1(core1_main);
-  // uint32_t g = multicore_fifo_pop_blocking(); // Wait for it to start up
 
   // Initialize the gpio
   for (int i = 0; i < NUM_INPUTS; i++)
