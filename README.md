@@ -4,7 +4,7 @@ Control Chunithm's Air Strings with a raspberry pi pico.
 ## todos
 
 * [x] keyboard emulation
-* [ ] dual ws2812 connections
+* [x] dual ws2812 connections
 
 ---
 
