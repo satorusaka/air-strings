@@ -19,6 +19,7 @@
 //--------------------------------------------------------------------+
 
 #define LED_PIN1 21
+#define LED_PIN2 2
 #define LED_LENGTH 3
 #define LED_BRIGHTNESS 255
 
@@ -36,7 +37,7 @@ void core1_main()
 {
   sleep_ms(1000);
   auto ledStrip1 = PicoLed::addLeds<PicoLed::WS2812B>(pio0, 0, LED_PIN1, LED_LENGTH, PicoLed::FORMAT_GRB);
-  auto ledStrip2 = PicoLed::addLeds<PicoLed::WS2812B>(pio0, 1, 2, LED_LENGTH, PicoLed::FORMAT_GRB);
+  auto ledStrip2 = PicoLed::addLeds<PicoLed::WS2812B>(pio0, 1, LED_PIN2, LED_LENGTH, PicoLed::FORMAT_GRB);
 
   std::array strips{ledStrip1, ledStrip2};
 
